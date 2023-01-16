@@ -1,6 +1,7 @@
 import psycopg2
 import json
 import spacy
+
 # Connect to the database
 nlp = spacy.load("en_core_web_sm")
 conn = psycopg2.connect(
@@ -15,7 +16,7 @@ conn = psycopg2.connect(
 cur = conn.cursor()
 
 # Execute a SELECT statement
-cur.execute("SELECT * FROM fmembers")
+cur.execute("SELECT id, firstname, lastname, fullname, constituency, results::text, keywords FROM fmembers")
 
 # Fetch all rows
 rows = cur.fetchall()
@@ -32,12 +33,18 @@ for row in rows:
         "constituency": constituency
     }
     if results is not None:
-        data["results"] = json.loads(results)
-        print(data["results"])
+        try:
+            data["results"] = json.loads(results)
+            print(data["results"])
+        except json.decoder.JSONDecodeError:
+            data["results"] = {}
     else:
         data["results"] = {}
     if keywords is not None:
-        data["keywords"] = json.loads(keywords)
+        try:
+            data["keywords"] = json.loads(keywords)
+        except json.decoder.JSONDecodeError:
+            data["keywords"] = []
     else:
         data["keywords"] = []
     objects.append(data)
@@ -52,12 +59,6 @@ for row in rows:
             data["keywords"].extend(verbs[:3])
             cur.execute(f"UPDATE fmembers SET keywords = '{json.dumps(data['keywords'])}' WHERE id = {id}")
             conn.commit()
-
-
-
-
-# Print the objects
-#print(objects)
 
 # Close the cursor and connection
 cur.close()
