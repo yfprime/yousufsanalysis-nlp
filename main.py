@@ -34,8 +34,7 @@ for row in rows:
     if results is not None:
         data["results"] = json.loads(results)
         print(data["results"])
-    else:
-        data["results"] = {}
+    
     if keywords is not None:
         data["keywords"] = json.loads(keywords)
     else:
