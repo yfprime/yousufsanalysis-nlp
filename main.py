@@ -11,17 +11,40 @@ conn = psycopg2.connect(
     user="postgres",
     password="7zDXiDUkYct8nZV"
 )
-
+class Member:
+    def __init__(self, id, firstname, lastname, fullname, constituency, results, keywords):
+        self.id = id
+        self.firstname = firstname
+        self.lastname = lastname
+        self.fullname = fullname
+        self.constituency = constituency
+        self.results = results
+        self.keywords = keywords
+    def printResults(self):
+        print(self.results)
 # Create a cursor object
 cur = conn.cursor()
 
 # Execute a SELECT statement
-cur.execute("SELECT id, firstname, lastname, fullname, constituency, results::text, keywords FROM fmembers")
+cur.execute("SELECT id, firstname, lastname, fullname, constituency, results, keywords FROM fmembers")
 
 # Fetch all rows
 rows = cur.fetchall()
 
-# Create an object for each row of data
+# Convert rows to a list of Member objects
+members = []
+for row in rows:
+    if row[5] is not None:
+        member = Member(*row)
+        members.append(member)
+    else:
+        pass
+    
+
+
+cur.close()
+conn.close()
+"""
 objects = []
 for row in rows:
     id, firstname, lastname, fullname, constituency, results, keywords = row
@@ -59,7 +82,7 @@ for row in rows:
             data["keywords"].extend(verbs[:3])
             cur.execute(f"UPDATE fmembers SET keywords = '{json.dumps(data['keywords'])}' WHERE id = {id}")
             conn.commit()
-
+    print(results)
+    """
 # Close the cursor and connection
-cur.close()
-conn.close()
+
