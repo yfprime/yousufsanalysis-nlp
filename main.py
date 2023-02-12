@@ -20,8 +20,13 @@ class Member:
         self.constituency = constituency
         self.results = results
         self.keywords = keywords
+        self.adjs = []
+        self.verbs = []
+        self.nouns= []
     def printResults(self):
         print(self.results)
+    def printTokens(self):
+        print(self.tokens)
 # Create a cursor object
 cur = conn.cursor()
 
@@ -43,6 +48,25 @@ for row in rows:
 
 
 cur.close()
+
+
+for member in members:
+    if member.results is not None:
+        for result in member.results:
+            doc = nlp(result["headline"])
+            for token in doc:
+                if token.pos_ in ["ADJ"] and token.text is not None:
+                    member.adjs.append(token.text)
+                elif token.pos_ in ["VERB"] and token.text is not None:
+                    member.verbs.append(token.text)
+                elif token.pos_ in ["NOUN"] and token.text is not None:
+                    member.nouns.append(token.text)
+
+for member in members:
+    cur = conn.cursor()
+    cur.execute("UPDATE fmembers SET adjectives=%s, verbs=%s, nouns=%s WHERE id=%s", (member.adjs, member.verbs, member.nouns, member.id))
+    conn.commit()
+    cur.close()
 conn.close()
 """
 objects = []
